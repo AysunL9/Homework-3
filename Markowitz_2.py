@@ -61,6 +61,7 @@ class MyPortfolio:
         self.exclude = exclude
         self.lookback = lookback
         self.gamma = gamma
+        self.lookforward=50
 
     def calculate_weights(self):
         # Get the assets by excluding the specified column
@@ -74,7 +75,16 @@ class MyPortfolio:
         """
         TODO: Complete Task 4 Below
         """
-
+        from pypfopt.efficient_frontier import EfficientFrontier
+        from pypfopt import risk_models
+        from pypfopt import expected_returns
+        mu = expected_returns.mean_historical_return(self.price[assets])#returns.mean() * 252
+        S = risk_models.sample_cov(self.price[assets]) #Get the sample covariance matrix
+        ef = EfficientFrontier(mu, S)
+        weights = ef.max_sharpe(risk_free_rate=0.00) #Maximize the Sharpe ratio, and get the raw weights
+        cleaned_weights = ef.clean_weights() 
+        self.portfolio_weights[assets]=[a[1] for a in cleaned_weights.items()]
+        self.portfolio_weights[self.exclude] = 0
         """
         TODO: Complete Task 4 Above
         """
